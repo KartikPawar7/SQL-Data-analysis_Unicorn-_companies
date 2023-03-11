@@ -1,0 +1,78 @@
+-- Data analysis and answering key questions
+-- NUMBER 1: Sort the continents based on the largest number of unicorn companies? 
+-- What continents have the most unicorn companies?
+
+select *from unicorn_companies;
+
+select continent, count(distinct(company)) as max_comp from unicorn_companies
+group by continent
+order by max_comp desc;
+
+-- Number 2: Which countries have more than 100 unicorn companies?
+
+select *from unicorn_companies;
+
+select country, count(company_id) as total_comp from unicorn_companies
+group by country
+having count(company_id) >100
+order by total_comp desc;
+
+
+-- NUMBER 3: What industry is the largest based on the total funding? How much is the average valuation?
+
+select *from unicorn_industries;
+select *from unicorn_funding;
+
+select ui.industry, sum(uf.funding) as Total_funding,
+avg(uf.valuation) as avg_valuation
+from unicorn_industries as ui
+left join unicorn_funding as uf
+on ui.company_id = uf.company_id 
+group by ui.industry
+order by Total_funding desc, avg_valuation desc;
+
+
+-- NUMBER 4: Based on the industry we decided on number 3, 
+-- how many companies joined as unicorn companies annually in the period of 2016 until 2022?
+
+select *from unicorn_industries;
+select *from unicorn_funding;
+select *from unicorn_dates;
+select *from unicorn_companies;
+
+select extract(year from ud.date_joined ) as joined_date,
+count(distinct uc.company_id) as company_num 
+from unicorn_companies as uc
+left join unicorn_dates as ud
+on uc.company_id = ud.company_id
+left join unicorn_industries as ui
+on uc.company_id = ui.company_id
+where ui.industry = 'Fintech' and ( extract( year from ud.date_joined) between 2016 and 2022)
+group by ( extract( year from ud.date_joined));
+
+-- NUMBER 5: (a) Show a detailed data that gives the information about company id, origin city, country, and continent, company industry, and company valuation. What is the origin country of the industry with the largest valuation? 
+-- (b) How about Indonesia? What company holds the largest valuation?
+
+select *from unicorn_industries;
+select *from unicorn_funding;
+select *from unicorn_dates;
+select *from unicorn_companies; 
+
+select uc.company, uc.city, uc.country, uc.continent, ui.industry, uf.valuation 
+from unicorn_companies as uc
+left join unicorn_industries as ui
+on uc.company_id = ui.company_id
+left join unicorn_funding as uf
+on uc.company_id = uf.company_id
+order by uf.valuation desc;
+
+-- (b) How about Indonesia? What company holds the largest valuation?
+
+select uc.company, uc.city, uc.country, uc.continent, ui.industry, uf.valuation 
+from unicorn_companies as uc
+left join unicorn_industries as ui
+on uc.company_id = ui.company_id
+left join unicorn_funding as uf
+on uc.company_id = uf.company_id
+where uc.country = 'Indonesia'
+order by uf.valuation desc
